@@ -4,9 +4,12 @@ import com.sun.jdi.Value;
 import javafx.geometry.BoundingBox;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class Game {
     GraphicsContext gc;
@@ -23,7 +26,7 @@ public class Game {
     final Stack<Card> deck = new Stack<>();
 
     List<Stack<Card>> board = new ArrayList<>();
-    List<Stack<BoundingBox>> boardBound = new ArrayList<>();
+    List<List<BoundingBox>> boardBound = new ArrayList<>();
 
     Game ()
     {
@@ -38,9 +41,11 @@ public class Game {
         fillDeck();
         shuffle();
         layBoard();
+        generateCardBound();
         revealCards();
         drawGame();
     }
+
 
 
     /**
@@ -199,9 +204,35 @@ public class Game {
         }
     }
 
+    /**
+     * draw card back to the fucking screen
+     * @param x x coordinate to draw at
+     * @param y y coordinate to draw at
+     */
     void drawCardBack(double x, double y)
     {
             gc.drawImage(imageCache.get("cardback"), x, y, CARD_WIDTH, CARD_HEIGHT);
     }
 
+    /**
+     * generate bound for all of the card
+     */
+    void generateCardBound()
+    {
+        boardBound.clear();
+        for(int i=0;i<7;i++)
+        {
+            boardBound.add(new ArrayList<>());
+            Stack<Card> c = board.get(i);
+            boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,2*PADDING+(PADDING*i),CARD_WIDTH,CARD_HEIGHT));
+            for(int j = 1;j<c.size();j++)
+            {
+                boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,2*PADDING+(PADDING*i),CARD_WIDTH,CARD_HEIGHT));
+            }
+        }
+    }
+
+    public void handleMouseClicked(MouseEvent me) {
+
+    }
 }

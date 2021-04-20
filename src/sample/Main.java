@@ -10,6 +10,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
 public class Main extends Application {
 
     public Scene gameScene;
@@ -70,6 +73,7 @@ public class Main extends Application {
 
                 //draw
             }
+
         }.start();
 
 
