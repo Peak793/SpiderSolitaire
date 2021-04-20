@@ -9,6 +9,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import javax.xml.stream.events.StartElement;
+import java.io.InputStream;
+
 
 public class Menu {
     //Constants
@@ -35,13 +38,13 @@ public class Menu {
 //        menuBtn.setLayoutY(350);
 
         //2
-        menuBtn.setStyle("-fx-alignment : center;" +
-                "-fx-background-color : transparent;" +
-                "-fx-spacing : 15;" +
-                "-fx-pref-width : 100;" +
-                "-fx-pref-height : 200;" );
-        menuBtn.setLayoutX(670);
-        menuBtn.setLayoutY(300);
+//        menuBtn.setStyle("-fx-alignment : center;" +
+//                "-fx-background-color : transparent;" +
+//                "-fx-spacing : 20;" +
+//                "-fx-pref-width : 100;" +
+//                "-fx-pref-height : 200;" );
+//        menuBtn.setLayoutX(670);
+//        menuBtn.setLayoutY(270);
 
 //        Image image = new Image("res/logo2.png");
 //        ImageView view = new ImageView(image);
@@ -50,7 +53,7 @@ public class Menu {
 //        view.setFitHeight(250);
 //        view.setX(20);
 //        view.setY(40);
-        Pane pane = new Pane(menuBtn);
+        Pane pane = new Pane();
 
         //1
 //        pane.setStyle("-fx-background-image : url(/res/menubg.png);" +
@@ -59,7 +62,13 @@ public class Menu {
 //                "-fx-background-position: center center;");
 
         //2
-        pane.setStyle("-fx-background-image : url(/res/menubg2.png);" +
+//        pane.setStyle("-fx-background-image : url(/res/menubg2.png);" +
+//                "-fx-background-repeat: stretch;"+
+//                "-fx-background-size: 900 600;"+
+//                "-fx-background-position: center center;");
+
+        //3
+        pane.setStyle("-fx-background-image : url(/res/ClassyMenu.png);" +
                 "-fx-background-repeat: stretch;"+
                 "-fx-background-size: 900 600;"+
                 "-fx-background-position: center center;");
@@ -68,22 +77,51 @@ public class Menu {
         /*
             Create buttons for menu items.
              */
-        Button startBtn = new Button("Start");
+        ImageView StartBtView = new ImageView(new Image("/res/Startbt.png"));
+        ImageView ScoreBtView = new ImageView(new Image("/res/Scorebt.png"));
+        ImageView ExitBtView = new ImageView(new Image("/res/Exitbt.png"));
+
+        StartBtView.setFitHeight(70);
+        StartBtView.setFitWidth(198);
+        ScoreBtView.setFitHeight(70);
+        ScoreBtView.setFitWidth(198);
+        ExitBtView.setFitHeight(70);
+        ExitBtView.setFitWidth(198);
+
+        Button startBtn = new Button("");
                 startBtn.setStyle("-fx-alignment : center;" +
                 "-fx-font-size : 22;" +
-                "-fx-pref-width : 100;");
+                "-fx-pref-width : 198;" +
+                "-fx-pref-height : 70;" +
+                "-fx-background-color: transparent");
 
-        Button scoreBtn = new Button("Score");
+                startBtn.setLayoutX(600);
+                startBtn.setLayoutY(259);
+                startBtn.setGraphic(StartBtView);
+
+        Button scoreBtn = new Button("");
                 scoreBtn.setStyle("-fx-alignment : center;" +
                 "-fx-font-size : 22;" +
-                "-fx-pref-width : 100;");
+                "-fx-pref-width : 198;" +
+                "-fx-pref-height : 70;" +
+                "-fx-background-color : grey;"+
+                "-fx-background-color: transparent");
+                scoreBtn.setLayoutX(600);
+                scoreBtn.setLayoutY(349);
+                scoreBtn.setGraphic(ScoreBtView);
 
-        Button exitBtn = new Button("Exit");
+        Button exitBtn = new Button("");
                 exitBtn.setStyle("-fx-font-size : 22;" +
-                "-fx-pref-width : 100;" +
-                "-fx-alignment : center;");
+                "-fx-pref-width : 198;" +
+                "-fx-pref-height : 70;" +
+                "-fx-alignment : center;" +
+                "-fx-background-color : transparent;");
+                exitBtn.setLayoutX(600);
+                exitBtn.setLayoutY(439);
+                exitBtn.setGraphic(ExitBtView);
         //Add all the button to Vbox
-        menuBtn.getChildren().addAll(startBtn,scoreBtn,exitBtn);
+//        menuBtn.getChildren().addAll(startBtn,scoreBtn,exitBtn);
+        pane.getChildren().addAll(startBtn,scoreBtn,exitBtn);
 
         /**
          * handle when start button is clicked

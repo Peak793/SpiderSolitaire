@@ -67,6 +67,7 @@ public class Main extends Application {
                         isGameStart = true;
                     }
 
+
                 //draw
             }
         }.start();
@@ -92,6 +93,10 @@ public class Main extends Application {
                 primaryStage.centerOnScreen();
                 currentScene = 1;
                 menu.isStartBtnPressed = false;
+            }
+            if (menu.isExitBtnPressed)
+            {
+                primaryStage.close();
             }
         }
     }
