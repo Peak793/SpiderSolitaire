@@ -2,16 +2,16 @@ package sample;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.awt.event.MouseEvent;
+import java.awt.*;
 import java.awt.event.MouseListener;
+
 
 public class Main extends Application {
 
@@ -28,6 +28,9 @@ public class Main extends Application {
      */
     public int currentScene = 0;
 
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -39,14 +42,11 @@ public class Main extends Application {
         "-fx-background-repeat: stretch;"+
         "-fx-background-size: 1055 800;"+
         "-fx-background-position: center center;");
-        //back bg
-//        root.setStyle("-fx-background-image : url(/res/background.jpg);"+
-//                "-fx-background-repeat: stretch;"+
-//                "-fx-background-size: 1055 800;"+
-//                "-fx-background-position: center center;");
+
         gameScene = new Scene(root);
 
         Canvas canvas = new Canvas(1055,800);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
         root.getChildren().add(canvas);
 
         menu =new Menu();
@@ -65,25 +65,23 @@ public class Main extends Application {
                 //update
                 sceneChanger(primaryStage);
                     //game start
-                    if(!isGameStart) {
-                        game = new Game(canvas.getGraphicsContext2D());
+                    if(!isGameStart && currentScene == 1) {
+                        game = new Game(gc);
+                        System.out.println("1");
                         isGameStart = true;
                     }
-
 
                 //draw
             }
 
         }.start();
-
+        canvas.setOnMouseClicked(t->{
+            game.handleMouseClicked(t);
+        });
 
         primaryStage.setScene(menu.scene);
         primaryStage.centerOnScreen();
         primaryStage.show();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 
     /*

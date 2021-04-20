@@ -1,22 +1,23 @@
 package sample;
 
 import com.sun.jdi.Value;
+import com.sun.webkit.graphics.WCGraphicsContext;
 import javafx.geometry.BoundingBox;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
 
 public class Game {
-    GraphicsContext gc;
-
     //Constants
     final double CARD_WIDTH = 78, CARD_HEIGHT = 107,
             ROUNDING_FACTOR = 10, PADDING = 25;
+    private GraphicsContext gc;
 
     Random random = new Random();
 
@@ -24,19 +25,18 @@ public class Game {
     private final Map<String, Image> imageCache = new HashMap<>();
 
     final Stack<Card> deck = new Stack<>();
+    BoundingBox deckBound = new BoundingBox(1055 - PADDING - CARD_WIDTH, 800 - PADDING - CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT);
 
     List<Stack<Card>> board = new ArrayList<>();
     List<List<BoundingBox>> boardBound = new ArrayList<>();
 
-    Game ()
-    {
+    Game() {
 
+        gc = null;
     }
 
-    Game (GraphicsContext gc)
-    {
+    Game(GraphicsContext gc) {
         this.gc = gc;
-
         loadImages();
         fillDeck();
         shuffle();
@@ -45,8 +45,6 @@ public class Game {
         revealCards();
         drawGame();
     }
-
-
 
     /**
      * Load all the textures needed for cards
@@ -125,12 +123,12 @@ public class Game {
      */
     void drawGame()
     {
-        gc.clearRect(0,0,1300,800);
+        gc.clearRect(0,0,1055,800);
         double x;
         double y;
 
         //draw the board
-        for(int i = 0;i<10;i++)
+        for(int i = 0;i<board.size();i++)
         {
             x = PADDING + (CARD_WIDTH + PADDING) * i;
             Stack<Card> stack = board.get(i);
@@ -153,7 +151,7 @@ public class Game {
                 }
             }
         }
-
+        drawHand();
     }
 
     /**
@@ -215,6 +213,30 @@ public class Game {
     }
 
     /**
+     * draw bottom left corner deck i don't know what it's called
+     */
+    void drawHand()
+    {
+
+        gc.setStroke(Color.LIGHTBLUE);
+        gc.setLineWidth(3);
+        gc.strokeRoundRect(1055-PADDING-CARD_WIDTH,800-PADDING-CARD_HEIGHT,CARD_WIDTH, CARD_HEIGHT, ROUNDING_FACTOR, ROUNDING_FACTOR);
+        if(deck.size()>=10)
+        {
+            drawCardBack(1055-PADDING-CARD_WIDTH,800-PADDING-CARD_HEIGHT);
+        }else
+        {
+            drawEmpty(1055-PADDING-CARD_WIDTH,800-PADDING-CARD_HEIGHT);
+        }
+
+        gc.setFont(new Font("Playlist Script.otf",40));
+        gc.setFill(Color.RED);
+        gc.setStroke(Color.WHITE);
+        gc.setLineWidth(10);
+        gc.fillText(Integer.toString((int)deck.size()/10),1045-PADDING-CARD_WIDTH/2,870-PADDING-CARD_HEIGHT);
+    }
+
+    /**
      * generate bound for all of the card
      */
     void generateCardBound()
@@ -230,9 +252,39 @@ public class Game {
                 boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,2*PADDING+(PADDING*i),CARD_WIDTH,CARD_HEIGHT));
             }
         }
+
     }
 
-    public void handleMouseClicked(MouseEvent me) {
+    void handleMouseClicked(MouseEvent ME)
+    {
+        double x= ME.getX();
+        double y= ME.getY();
 
+        if(deckBound.contains(x,y))
+        {
+            addCardToBoard();
+            ME.consume();
+        }
+    }
+
+    void addCardToBoard()
+    {
+        for(int i = 0;i<board.size();i++)
+        {
+            board.get(i).push(deck.pop());
+        }
+        revealCards();
+        drawGame();
+    }
+
+    /**
+     * Perform final cleanup for the handleMouseClicked() function
+     * @param me the MouseEvent passed by handleMouseClicked()
+     * เปิดการ์ดแล้ววาดเฟรมใหม่
+     */
+    private void finish(MouseEvent me) {
+        revealCards();
+        drawGame();
+        me.consume();
     }
 }

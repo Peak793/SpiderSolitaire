@@ -1,10 +1,21 @@
 package sample;
 
+import javafx.geometry.BoundingBox;
+import javafx.stage.Stage;
+
+
 public class Card {
+
     CardValue value;
 
     Boolean revealed = false;
     Boolean selected = false;
+    private double width = 78,height=107;
+    BoundingBox bb;
+    Card()
+    {
+
+    }
 
     Card(CardValue value)
     {
@@ -33,5 +44,9 @@ public class Card {
     void reveal()
     {
         revealed = true;
+    }
+
+    void setCoordinate(double x,double y){
+        bb = new BoundingBox(x,y,width,height);
     }
 }
