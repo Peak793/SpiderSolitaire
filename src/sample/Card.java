@@ -49,4 +49,21 @@ public class Card {
     void setCoordinate(double x,double y){
         bb = new BoundingBox(x,y,width,height);
     }
+
+    CardValue getValue()
+    {
+        return value;
+    }
+
+    // เปลี่ยนค่า ระหว่าง การ์ดถูกเลือก กับ ไม่ถูกเลือก
+    void toggleSelected()
+    {
+        selected = !selected;
+    }
+
+    Boolean isSelected(){
+        return selected;
+    }
+
+
 }

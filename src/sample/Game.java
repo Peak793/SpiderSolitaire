@@ -1,7 +1,6 @@
 package sample;
 
-import com.sun.jdi.Value;
-import com.sun.webkit.graphics.WCGraphicsContext;
+
 import javafx.geometry.BoundingBox;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -9,7 +8,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-import java.awt.*;
+
 import java.util.*;
 import java.util.List;
 
@@ -27,8 +26,14 @@ public class Game {
     final Stack<Card> deck = new Stack<>();
     BoundingBox deckBound = new BoundingBox(1055 - PADDING - CARD_WIDTH, 800 - PADDING - CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT);
 
+    private Stack<Card> selected = new Stack<>();
+
     List<Stack<Card>> board = new ArrayList<>();
     List<List<BoundingBox>> boardBound = new ArrayList<>();
+
+    List<Stack<Card>> foundation = new ArrayList<>();
+    private String winText = "";
+    private String alertText = "";
 
     Game() {
 
@@ -192,7 +197,7 @@ public class Game {
     void drawCard(Card card,double x,double y)
     {
         gc.drawImage(imageCache.get(card.getName()),x,y,CARD_WIDTH, CARD_HEIGHT);
-        if(card.isRevealed())
+        if(card.isSelected())
         {
             //gold stroke
 //            gc.setStroke(Color.rgb(	229, 173, 77));
@@ -242,14 +247,14 @@ public class Game {
     void generateCardBound()
     {
         boardBound.clear();
-        for(int i=0;i<7;i++)
+        for(int i=0;i<board.size();i++)
         {
             boardBound.add(new ArrayList<>());
             Stack<Card> c = board.get(i);
-            boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,2*PADDING+(PADDING*i),CARD_WIDTH,CARD_HEIGHT));
+            boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,PADDING * (2),CARD_WIDTH,CARD_HEIGHT));
             for(int j = 1;j<c.size();j++)
             {
-                boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,2*PADDING+(PADDING*i),CARD_WIDTH,CARD_HEIGHT));
+                boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,PADDING * (2 + j),CARD_WIDTH,CARD_HEIGHT));
             }
         }
 
@@ -260,21 +265,50 @@ public class Game {
         double x= ME.getX();
         double y= ME.getY();
 
-        if(deckBound.contains(x,y))
+        //Reset teh alert texture
+        alertText = null;
+
+        if(deckBound.contains(x,y) && deck.size()/10 > 0)
         {
             addCardToBoard();
             ME.consume();
         }
+
+        boolean boardClicked = false;
+        int indexX = -1, indexY = -1;
+        for(int i=0;i<board.size();i++)
+        {
+            List<BoundingBox> boundList = boardBound.get(i);
+            for(int j=0;j<boundList.size();j++)
+            {
+                if(boundList.get(j).contains(x,y))
+                {
+                    if(board.get(i).isEmpty() || board.get(i).get(j).isRevealed())
+                    {
+                        indexX = i;
+                        indexY = j;
+                        boardClicked = true;
+                    }
+                }
+            }
+            if (boardClicked)
+            {
+                boardClicked(indexX,indexY);
+                finish(ME);
+                return;
+            }
+        }
+
     }
 
     void addCardToBoard()
     {
-        for(int i = 0;i<board.size();i++)
-        {
-            board.get(i).push(deck.pop());
-        }
-        revealCards();
-        drawGame();
+            for (int i = 0; i < board.size(); i++) {
+                board.get(i).push(deck.pop());
+            }
+            revealCards();
+            generateCardBound();
+            drawGame();
     }
 
     /**
@@ -286,5 +320,116 @@ public class Game {
         revealCards();
         drawGame();
         me.consume();
+    }
+
+    /**
+     * Handles the board being clicked
+     * @param indexX the column on the board clicked
+     * @param indexY the card in the column clicked
+     */
+    private void boardClicked(int indexX ,int indexY) {
+        Stack<Card> stack = board.get(indexX);
+        Card card = null;
+        if (!stack.isEmpty()) {
+            card = stack.get(indexY);
+        }
+        if (!selected.isEmpty()) {
+            if (selected.contains(card)) {
+                deselect();
+            } else if (isValidBoardMove(card, selected.get(0)) && (indexY == stack.size() - 1 || indexY == 0)) {
+                moveCards(stack);
+                generateCardBound();
+                deselect();
+            } else {
+                alertText = "Invalid move!";
+                deselect();
+            }
+        } else {
+            deselect();
+            if(isValidSelect(indexY,stack))
+            {
+                for(int i = indexY;i<stack.size();i++)
+                {
+                    select(stack.get(i));
+                }
+            }
+        }
+    }
+
+    private boolean isValidBoardMove(Card parent, Card child)
+    {
+        if(parent == null)
+        {
+            return child.getValue() == CardValue.KING;
+        }
+        if(parent.getValue().ordinal() != child.getValue().ordinal() + 1)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Move the selected card to the specified Stack
+     * TODO: Make more efficient than checking each Stack for the presence of the selected card
+     * @param stack the Stack to move to
+     */
+    private void moveCards(Stack<Card> stack) {
+        for (Card card : selected) {
+
+            for (Stack<Card> boardStack : board) {
+                boardStack.remove(card);
+            }
+            stack.push(card);
+        }
+//        if (isGameWon()) {
+//            winText = "You win!";
+//        }
+    }
+
+    private void checkFStackOnBoard()
+    {
+
+        for(int i=0;i<board.size();i++)
+        {
+            Stack<Card> stack = board.get(i);
+        }
+    }
+
+    /**
+     * Set the selected variable to be equal to a card
+     * @param card the card to select
+     */
+    private void select(Card card) {
+        card.toggleSelected();
+        selected.add(card);
+    }
+
+    /**
+     * Deselect the currently selected card
+     */
+    private void deselect() {
+        if (!selected.isEmpty()) {
+            for (Card card : selected) {
+                card.toggleSelected();
+            }
+            selected.clear();
+        }
+    }
+
+    private boolean isValidSelect(int y,Stack<Card> e)
+    {
+        if(y == e.size()-1)
+        {
+            return true;
+        }
+        for(int i = y;i<e.size()-1;i++)
+        {
+            if(e.get(i).getValue().ordinal() != e.get(i+1).getValue().ordinal()+1)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
