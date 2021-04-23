@@ -2,13 +2,18 @@ package sample;
 
 
 import javafx.geometry.BoundingBox;
+import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 
+import javax.swing.plaf.IconUIResource;
+import javax.swing.text.Position;
 import java.util.*;
 import java.util.List;
 
@@ -32,6 +37,8 @@ public class Game {
     List<List<BoundingBox>> boardBound = new ArrayList<>();
 
     List<Stack<Card>> foundation = new ArrayList<>();
+    List<BoundingBox> foundationBound = new ArrayList<>();
+
     private String winText = "";
     private String alertText = "";
 
@@ -42,6 +49,7 @@ public class Game {
 
     Game(GraphicsContext gc) {
         this.gc = gc;
+        initFoundation();
         loadImages();
         fillDeck();
         shuffle();
@@ -49,6 +57,16 @@ public class Game {
         generateCardBound();
         revealCards();
         drawGame();
+    }
+
+    private void initFoundation()
+    {
+        foundation.clear();
+        for(int i =0 ;i<8;i++)
+        {
+            foundation.add(new Stack());
+            foundationBound.add(new BoundingBox(PADDING,800 - PADDING - CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT));
+        }
     }
 
     /**
@@ -156,7 +174,36 @@ public class Game {
                 }
             }
         }
+
+        //draw foundation
+        for(int i=0;i<foundation.size();i++)
+        {
+            if(!foundation.get(i).isEmpty())
+            {
+                drawCard(new Card(CardValue.KING), (PADDING) + (PADDING*i),800 - PADDING - CARD_HEIGHT);
+            }
+        }
         drawHand();
+
+        //draw text
+        drawText(alertText,PADDING,800-PADDING,30,Color.RED,TextAlignment.LEFT);
+
+        drawText(winText,527.5,400,70,Color.WHITE,TextAlignment.CENTER);
+    }
+
+    /**
+     * Draw the specified text to the game canvas at the specified coordinates with additional attributes.
+     * @param text the text to draw
+     * @param x the x coordinate to draw at
+     * @param y the y coordinate to draw at
+     * @param paint the Paint to draw the text with
+     * @param textAlignment the TextAlignment to draw with
+     */
+    private void drawText(String text, double x, double y, double size, Paint paint, TextAlignment textAlignment) {
+        gc.setFont(new Font(size));
+        gc.setFill(paint);
+        gc.setTextAlign(textAlignment);
+        gc.fillText(text, x, y);
     }
 
     /**
@@ -235,9 +282,10 @@ public class Game {
         }
 
         gc.setFont(new Font("Playlist Script.otf",40));
-        gc.setFill(Color.RED);
+        gc.setFill(Color.WHITE);
         gc.setStroke(Color.WHITE);
         gc.setLineWidth(10);
+        gc.setTextAlign(TextAlignment.LEFT);
         gc.fillText(Integer.toString((int)deck.size()/10),1045-PADDING-CARD_WIDTH/2,870-PADDING-CARD_HEIGHT);
     }
 
@@ -271,6 +319,9 @@ public class Game {
         if(deckBound.contains(x,y) && deck.size()/10 > 0)
         {
             addCardToBoard();
+            revealCards();
+            generateCardBound();
+            drawGame();
             ME.consume();
         }
 
@@ -303,12 +354,18 @@ public class Game {
 
     void addCardToBoard()
     {
-            for (int i = 0; i < board.size(); i++) {
-                board.get(i).push(deck.pop());
+        for(int i = 0;i<board.size();i++)
+        {
+            if(board.get(i).isEmpty()) {
+                alertText = "You can not deal with a new row while any column are empty";
+                return;
             }
-            revealCards();
-            generateCardBound();
-            drawGame();
+
+        }
+        for (int i = 0; i < board.size(); i++) {
+            board.get(i).push(deck.pop());
+        }
+
     }
 
     /**
@@ -354,13 +411,18 @@ public class Game {
                 }
             }
         }
+        addToFoundation();
+        if(isGameWon())
+        {
+            winText = "YOU WIN!!";
+        }
     }
 
     private boolean isValidBoardMove(Card parent, Card child)
     {
         if(parent == null)
         {
-            return child.getValue() == CardValue.KING;
+           return true;
         }
         if(parent.getValue().ordinal() != child.getValue().ordinal() + 1)
         {
@@ -387,14 +449,6 @@ public class Game {
 //        }
     }
 
-    private void checkFStackOnBoard()
-    {
-
-        for(int i=0;i<board.size();i++)
-        {
-            Stack<Card> stack = board.get(i);
-        }
-    }
 
     /**
      * Set the selected variable to be equal to a card
@@ -431,5 +485,98 @@ public class Game {
             }
         }
         return true;
+    }
+
+    private boolean isGameWon()
+    {
+        for (Stack<Card> stack : foundation) {
+            if (stack.size() != 13) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean addToFoundation()
+    {
+        for(int i =0;i<board.size();i++)
+        {
+            Stack<Card> K = new Stack();
+           for(int j=0;j<board.get(i).size();j++)
+           {
+                   if (board.get(i).get(j).getValue().equals(CardValue.KING) && board.get(i).get(j).isRevealed()) {
+                       for(int z =j ;z<board.get(i).size();z++)
+                       {
+                          K.add(board.get(i).get(z));
+                       }
+                       System.out.println(Integer.toString(K.size()));
+                       if(K.size()==13 && CheckKING(K))
+                       {
+                           System.out.println("Hello world");
+                           moveCardToF(K);
+                           generateCardBound();
+                       }
+                       break;
+               }
+           }
+        }
+        return true;
+    }
+
+    private boolean CheckKING(Stack<Card> b)
+    {
+        for(int i =0;i<b.size()-1;i++)
+        {
+            System.out.println(b.get(i).getName() + " : " + Integer.toString(b.get(i).getValue().ordinal()) + " == " + b.get(i+1).getName() + " : " + Integer.toString(b.get(i+1).getValue().ordinal()+1) );
+            if(b.get(i).getValue().ordinal() != b.get(i+1).getValue().ordinal()+1)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void moveCardToF(Stack<Card> t) {
+        for(Card card : t)
+        {
+            for(Stack card2 : board)
+            {
+                card2.remove(card);
+            }
+        }
+
+        if (foundation.get(0).isEmpty()) {
+            for (int i = 0; i < t.size(); i++) {
+                foundation.get(0).push(t.peek());
+            }
+        } else if (foundation.get(1).isEmpty()) {
+            for (int i = 0; i < t.size(); i++) {
+                foundation.get(1).push(t.peek());
+            }
+        } else if (foundation.get(2).isEmpty()) {
+            for (int i = 0; i < t.size(); i++) {
+                foundation.get(2).push(t.peek());
+            }
+        } else if (foundation.get(3).isEmpty()) {
+            for (int i = 0; i < t.size(); i++) {
+                foundation.get(3).push(t.peek());
+            }
+        } else if (foundation.get(4).isEmpty()) {
+            for (int i = 0; i < t.size(); i++) {
+                foundation.get(4).push(t.peek());
+            }
+        } else if (foundation.get(5).isEmpty()) {
+            for (int i = 0; i < t.size(); i++) {
+                foundation.get(5).push(t.peek());
+            }
+        } else if (foundation.get(6).isEmpty()) {
+            for (int i = 0; i < t.size(); i++) {
+                foundation.get(6).push(t.peek());
+            }
+        } else if (foundation.get(7).isEmpty()) {
+            for (int i = 0; i < t.size(); i++) {
+                foundation.get(7).push(t.peek());
+            }
+        }
     }
 }
