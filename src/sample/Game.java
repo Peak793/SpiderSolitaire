@@ -318,6 +318,7 @@ public class Game {
 
         if(deckBound.contains(x,y) && deck.size()/10 > 0)
         {
+            deselect();
             addCardToBoard();
             revealCards();
             generateCardBound();
