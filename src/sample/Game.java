@@ -161,7 +161,7 @@ public class Game {
             Stack<Card> stack = board.get(i);
             if(stack.isEmpty())
             {
-                drawEmpty(x,PADDING*2);
+                drawEmpty(x,PADDING*2+15);
             }else
             {
                 for(int j=0;j<stack.size();j++)
