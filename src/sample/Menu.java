@@ -68,7 +68,7 @@ public class Menu {
 //                "-fx-background-position: center center;");
 
         //3
-        pane.setStyle("-fx-background-image : url(/res/ClassyMenu.png);" +
+        pane.setStyle("-fx-background-image : url(/res/ClassyMenu2.png);" +
                 "-fx-background-repeat: stretch;"+
                 "-fx-background-size: 900 600;"+
                 "-fx-background-position: center center;");

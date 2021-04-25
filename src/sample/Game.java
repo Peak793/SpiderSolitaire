@@ -2,18 +2,16 @@ package sample;
 
 
 import javafx.geometry.BoundingBox;
-import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 
-
-import javax.swing.plaf.IconUIResource;
-import javax.swing.text.Position;
+import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -23,13 +21,19 @@ public class Game {
             ROUNDING_FACTOR = 10, PADDING = 25;
     private GraphicsContext gc;
 
+    public int score;
+
+    BoundingBox mainMenuBound = new BoundingBox(8,4,182,47);
+    BoundingBox restartBound = new BoundingBox(923,11,125,42);
+
+
     Random random = new Random();
 
     //store all card's texture
     private final Map<String, Image> imageCache = new HashMap<>();
 
     final Stack<Card> deck = new Stack<>();
-    BoundingBox deckBound = new BoundingBox(1055 - PADDING - CARD_WIDTH, 800 - PADDING - CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT);
+    BoundingBox deckBound = new BoundingBox(1055 - PADDING - CARD_WIDTH, 800 -PADDING - CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT);
 
     private Stack<Card> selected = new Stack<>();
 
@@ -43,12 +47,12 @@ public class Game {
     private String alertText = "";
 
     Game() {
-
         gc = null;
     }
 
     Game(GraphicsContext gc) {
         this.gc = gc;
+        score = 500;
         initFoundation();
         loadImages();
         fillDeck();
@@ -162,7 +166,7 @@ public class Game {
             {
                 for(int j=0;j<stack.size();j++)
                 {
-                    y = PADDING * (2 + j);
+                    y = PADDING * (2 + j)+15;
                     Card card = stack.get(j);
                     if(card.isRevealed())
                     {
@@ -185,10 +189,14 @@ public class Game {
         }
         drawHand();
 
+        Rectangle rec = new Rectangle(0, 0, 100, 100);
+
         //draw text
         drawText(alertText,PADDING,800-PADDING,30,Color.RED,TextAlignment.LEFT);
 
         drawText(winText,527.5,400,70,Color.WHITE,TextAlignment.CENTER);
+
+        drawText(Integer.toString(score),527.5,42,30,Color.WHITE,TextAlignment.LEFT);
     }
 
     /**
@@ -200,7 +208,7 @@ public class Game {
      * @param textAlignment the TextAlignment to draw with
      */
     private void drawText(String text, double x, double y, double size, Paint paint, TextAlignment textAlignment) {
-        gc.setFont(new Font(size));
+        gc.setFont(Font.font("Brush Script MT", FontWeight.BOLD,size));
         gc.setFill(paint);
         gc.setTextAlign(textAlignment);
         gc.fillText(text, x, y);
@@ -281,12 +289,12 @@ public class Game {
             drawEmpty(1055-PADDING-CARD_WIDTH,800-PADDING-CARD_HEIGHT);
         }
 
-        gc.setFont(new Font("Playlist Script.otf",40));
+        gc.setFont(Font.font("Brush Script MT", FontWeight.BOLD,40));
         gc.setFill(Color.WHITE);
         gc.setStroke(Color.WHITE);
         gc.setLineWidth(10);
         gc.setTextAlign(TextAlignment.LEFT);
-        gc.fillText(Integer.toString((int)deck.size()/10),1045-PADDING-CARD_WIDTH/2,870-PADDING-CARD_HEIGHT);
+        gc.fillText(Integer.toString((int)deck.size()/10),1045-PADDING-CARD_WIDTH/2,PADDING-CARD_HEIGHT);
     }
 
     /**
@@ -299,22 +307,35 @@ public class Game {
         {
             boardBound.add(new ArrayList<>());
             Stack<Card> c = board.get(i);
-            boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,PADDING * (2),CARD_WIDTH,CARD_HEIGHT));
+            boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,PADDING * (2)+15,CARD_WIDTH,CARD_HEIGHT));
             for(int j = 1;j<c.size();j++)
             {
-                boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,PADDING * (2 + j),CARD_WIDTH,CARD_HEIGHT));
+                boardBound.get(i).add(new BoundingBox(PADDING + (CARD_WIDTH + PADDING) * i,PADDING * (2 + j)+15,CARD_WIDTH,CARD_HEIGHT));
             }
         }
 
     }
 
-    void handleMouseClicked(MouseEvent ME)
+    int handleMouseClicked(MouseEvent ME)
     {
+
         double x= ME.getX();
         double y= ME.getY();
 
         //Reset teh alert texture
         alertText = null;
+
+        if(mainMenuBound.contains(x,y))
+        {
+            ME.consume();
+            return 1;
+        }
+
+        if(restartBound.contains(x,y))
+        {
+            ME.consume();
+            return 2;
+        }
 
         if(deckBound.contains(x,y) && deck.size()/10 > 0)
         {
@@ -347,10 +368,10 @@ public class Game {
             {
                 boardClicked(indexX,indexY);
                 finish(ME);
-                return;
+                return 0;
             }
         }
-
+        return 0;
     }
 
     void addCardToBoard()
@@ -396,6 +417,7 @@ public class Game {
                 deselect();
             } else if (isValidBoardMove(card, selected.get(0)) && (indexY == stack.size() - 1 || indexY == 0)) {
                 moveCards(stack);
+                score -=1;
                 generateCardBound();
                 deselect();
             } else {
@@ -488,7 +510,7 @@ public class Game {
         return true;
     }
 
-    private boolean isGameWon()
+    public boolean isGameWon()
     {
         for (Stack<Card> stack : foundation) {
             if (stack.size() != 13) {
@@ -510,11 +532,11 @@ public class Game {
                        {
                           K.add(board.get(i).get(z));
                        }
-                       System.out.println(Integer.toString(K.size()));
+
                        if(K.size()==13 && CheckKING(K))
                        {
-                           System.out.println("Hello world");
                            moveCardToF(K);
+                           score +=100;
                            generateCardBound();
                        }
                        break;
@@ -528,7 +550,6 @@ public class Game {
     {
         for(int i =0;i<b.size()-1;i++)
         {
-            System.out.println(b.get(i).getName() + " : " + Integer.toString(b.get(i).getValue().ordinal()) + " == " + b.get(i+1).getName() + " : " + Integer.toString(b.get(i+1).getValue().ordinal()+1) );
             if(b.get(i).getValue().ordinal() != b.get(i+1).getValue().ordinal()+1)
             {
                 return false;
