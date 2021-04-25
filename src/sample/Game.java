@@ -194,7 +194,7 @@ public class Game {
         //draw text
         drawText(alertText,PADDING,800-PADDING,30,Color.RED,TextAlignment.LEFT);
 
-        drawText(winText,527.5,400,70,Color.WHITE,TextAlignment.CENTER);
+//        drawText(winText,527.5,400,70,Color.WHITE,TextAlignment.CENTER);
 
         drawText(Integer.toString(score),527.5,42,30,Color.WHITE,TextAlignment.LEFT);
     }
