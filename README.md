@@ -1,2 +1,2 @@
 # SpiderSolitaire
-I don't think you should waste your time trying this game for any reasons except you have a lot a lot of freeeee Timeeeeeeeeee.
+A simple card game inspired by Microsoft Solitaire game. This game is written in Java using JavaFX package with OOP, and Data-Structure concept.
